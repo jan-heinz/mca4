@@ -9,6 +9,7 @@ TagManager:
   - WanderPoint
   - Enemy
   - Prop
+  - Platform
   layers:
   - Default
   - TransparentFX

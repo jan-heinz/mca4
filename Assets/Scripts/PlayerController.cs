@@ -11,6 +11,10 @@ public class PlayerController : MonoBehaviour
   
       CharacterController controller;
       Vector3 input, moveDirection;
+      bool isOnPlatform = false;
+      Transform platformTransform;
+      Vector3 platformLastPosition;
+
       
       
       // Start is called before the first frame update
@@ -23,13 +27,12 @@ public class PlayerController : MonoBehaviour
           if (!LevelManager.isGameOver) {
               float moveHorizontal = Input.GetAxis("Horizontal");
               float moveVertical = Input.GetAxis("Vertical");
-  
+
               input = (transform.right * moveHorizontal + transform.forward * moveVertical).normalized;
               input *= moveSpeed;
-  
+
               if (controller.isGrounded) {
                   moveDirection = input;
-                  // can jump
                   if (Input.GetButton("Jump")) {
                       moveDirection.y = Mathf.Sqrt(2 * jumpHeight * gravity);
                   }
@@ -41,11 +44,35 @@ public class PlayerController : MonoBehaviour
                   input.y = moveDirection.y;
                   moveDirection = Vector3.Lerp(moveDirection, input, airControl * Time.deltaTime);
               }
-  
+
+              // platform movement 
+              if (isOnPlatform && platformTransform != null) {
+                  Vector3 platformMovement = platformTransform.position - platformLastPosition;
+                  platformMovement.y = 0;
+                  moveDirection += platformMovement / Time.deltaTime;
+                  platformLastPosition = platformTransform.position;
+              }
+
               moveDirection.y -= gravity * Time.deltaTime;
               controller.Move(moveDirection * Time.deltaTime);
-  
           }
       }
+
+      
+      void OnTriggerEnter(Collider other) {
+          if (other.CompareTag("Platform")) {
+              isOnPlatform = true;
+              platformTransform = other.transform;
+              platformLastPosition = platformTransform.position;
+          }
+      }
+
+      void OnTriggerExit(Collider other) {
+          if (other.CompareTag("Platform")) {
+              isOnPlatform = false;
+              platformTransform = null;
+          }
+      }
+
           
   }

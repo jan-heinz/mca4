@@ -82,21 +82,24 @@ public class EnemyAI : MonoBehaviour {
     }
 
     void UpdateChaseState() {
-        nextDestination = player.transform.position;
-        agent.stoppingDistance = attackDistance;
-        agent.speed = enemyChaseSpeed;
+        if (isPlayerInFOV() && distanceToPlayer <= chaseDistance) {
+            agent.speed = enemyChaseSpeed;
+            agent.stoppingDistance = attackDistance;
 
+            agent.SetDestination(player.transform.position);
 
-        if (distanceToPlayer <= attackDistance) {
-            currentState = FSMStates.Attack;
-        }
-        else if (distanceToPlayer > chaseDistance) {
+            if (distanceToPlayer <= attackDistance) {
+                currentState = FSMStates.Attack;
+            }
+        } 
+        else {
             findNextPoint();
             currentState = FSMStates.Patrol;
         }
-
-        faceTarget(nextDestination);
+        faceTarget(player.transform.position);
     }
+
+
 
     void UpdateAttackState() {
         nextDestination = player.transform.position;
@@ -143,5 +146,12 @@ public class EnemyAI : MonoBehaviour {
         }
 
         return false;
+    }
+    
+    void OnTriggerEnter(Collider other) {
+        if (other.CompareTag("Player")) {
+            var playerHealth = other.GetComponent<PlayerHealth>();
+            playerHealth.takeDamage(Random.Range(5, 15)); // does random dmg within range
+        }
     }
 }
